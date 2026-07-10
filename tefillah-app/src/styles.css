@@ -1,0 +1,225 @@
+:root {
+  --bg: #0e1526;
+  --bg2: #141d33;
+  --card: #1a2440;
+  --card2: #212d4f;
+  --border: #2e3b63;
+  --gold: #d4af6a;
+  --gold-bright: #eecf8f;
+  --text: #eef1f8;
+  --muted: #9aa5c4;
+  --good: #6fcf97;
+  --warn: #f2994a;
+  --font-ui: 'Heebo', system-ui, sans-serif;
+  --font-holy: 'Frank Ruhl Libre', 'David Libre', serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+  min-height: 100vh;
+  color: var(--text);
+  font-family: var(--font-ui);
+  direction: rtl;
+}
+
+#root { max-width: 860px; margin: 0 auto; padding: 0 14px 90px; }
+
+/* ---------- כותרת ---------- */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 4px 10px;
+}
+.header .brand { display: flex; align-items: baseline; gap: 10px; }
+.header h1 {
+  font-family: var(--font-holy);
+  font-size: 1.7rem; color: var(--gold-bright); font-weight: 900;
+}
+.header .hdate { color: var(--muted); font-size: 0.95rem; }
+.icon-btn {
+  background: var(--card); border: 1px solid var(--border); color: var(--text);
+  border-radius: 12px; padding: 8px 12px; cursor: pointer; font-size: 1rem;
+  font-family: var(--font-ui);
+}
+.icon-btn:hover { border-color: var(--gold); }
+
+/* ---------- ניווט ---------- */
+.tabs {
+  position: fixed; bottom: 0; right: 0; left: 0; z-index: 50;
+  display: flex; justify-content: center; gap: 4px;
+  background: rgba(14, 21, 38, 0.96); backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border); padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+}
+.tabs button {
+  flex: 1; max-width: 130px;
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-family: var(--font-ui); font-size: 0.83rem;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 2px; border-radius: 10px;
+}
+.tabs button .emoji { font-size: 1.25rem; }
+.tabs button.active { color: var(--gold-bright); background: var(--card); }
+
+/* ---------- כרטיסים ---------- */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px 18px; margin-bottom: 14px;
+}
+.card h2 {
+  font-size: 1.15rem; color: var(--gold-bright); margin-bottom: 10px;
+  font-family: var(--font-holy); font-weight: 700;
+}
+.card h3 { font-size: 1rem; margin-bottom: 6px; }
+.muted { color: var(--muted); font-size: 0.9rem; }
+
+.hero { text-align: center; padding: 26px 18px; }
+.hero .hebrew-date {
+  font-family: var(--font-holy); font-size: 2rem; font-weight: 900; color: var(--gold-bright);
+}
+.hero .greg-date { color: var(--muted); margin-top: 4px; }
+.hero .parsha { margin-top: 10px; font-size: 1.05rem; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+.chip {
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 999px; padding: 5px 13px; font-size: 0.9rem;
+}
+.chip.gold { border-color: var(--gold); color: var(--gold-bright); }
+
+/* ---------- מה אומרים היום ---------- */
+.say-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.say-item {
+  background: var(--card2); border-radius: 12px; padding: 12px 14px;
+  border-right: 3px solid var(--gold);
+}
+.say-item .say-title { font-weight: 700; font-size: 0.95rem; }
+.say-item .say-value { color: var(--gold-bright); margin-top: 2px; }
+.say-item .say-note { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+
+/* ---------- טבלת זמנים ---------- */
+.zmanim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+.zman {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--card2); border-radius: 10px; padding: 8px 12px; font-size: 0.9rem;
+}
+.zman b { color: var(--gold-bright); font-variant-numeric: tabular-nums; }
+
+/* ---------- חיפוש ורשימות ---------- */
+.search-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.search-row input {
+  flex: 1; background: var(--card); border: 1px solid var(--border); color: var(--text);
+  border-radius: 12px; padding: 12px 16px; font-size: 1rem; font-family: var(--font-ui);
+}
+.search-row input:focus { outline: none; border-color: var(--gold); }
+.cat-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.cat-chips button {
+  background: var(--card); border: 1px solid var(--border); color: var(--muted);
+  border-radius: 999px; padding: 6px 14px; cursor: pointer; font-family: var(--font-ui); font-size: 0.88rem;
+}
+.cat-chips button.active { border-color: var(--gold); color: var(--gold-bright); background: var(--card2); }
+
+.prayer-card { cursor: pointer; transition: border-color 0.15s; }
+.prayer-card:hover { border-color: var(--gold); }
+.prayer-card .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.prayer-card .tag { background: var(--bg2); border-radius: 6px; padding: 2px 8px; font-size: 0.78rem; color: var(--muted); }
+
+/* ---------- קורא תפילה ---------- */
+.reader-controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.holy-text {
+  font-family: var(--font-holy);
+  font-size: calc(1.25rem * var(--font-scale, 1));
+  line-height: 2;
+  white-space: pre-wrap;
+}
+.explain {
+  background: rgba(212, 175, 106, 0.08); border: 1px dashed var(--gold);
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 12px;
+  color: var(--gold-bright); font-size: 0.92rem;
+}
+
+/* ---------- טפסים ---------- */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 0.85rem; color: var(--muted); }
+.field input, .field select {
+  background: var(--bg2); border: 1px solid var(--border); color: var(--text);
+  border-radius: 10px; padding: 10px 12px; font-size: 1rem; font-family: var(--font-ui);
+}
+.field input:focus, .field select:focus { outline: none; border-color: var(--gold); }
+.check { display: flex; align-items: center; gap: 8px; font-size: 0.92rem; }
+.btn {
+  background: linear-gradient(135deg, var(--gold) 0%, #b8934f 100%);
+  color: #1a1408; border: none; border-radius: 12px;
+  padding: 12px 22px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: var(--font-ui);
+}
+.btn:hover { filter: brightness(1.1); }
+.btn.secondary { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
+.btn.small { padding: 7px 14px; font-size: 0.85rem; }
+.btn.danger { background: none; border: 1px solid #a33; color: #e77; }
+
+/* ---------- מסמך אזכרה ---------- */
+.doc-section { margin-bottom: 22px; }
+.doc-section .sec-title {
+  font-family: var(--font-holy); font-weight: 700; font-size: 1.2rem;
+  color: var(--gold-bright); border-bottom: 1px solid var(--border);
+  padding-bottom: 5px; margin-bottom: 10px;
+}
+.letter-verse { margin-bottom: 14px; }
+.letter-verse .letter-head {
+  display: inline-block; background: var(--card2); border: 1px solid var(--gold);
+  color: var(--gold-bright); border-radius: 8px; padding: 1px 12px;
+  font-family: var(--font-holy); font-weight: 900; font-size: 1.2rem; margin-bottom: 6px;
+}
+.who-badge {
+  display: inline-block; background: var(--bg2); border: 1px solid var(--border);
+  color: var(--muted); border-radius: 999px; padding: 1px 10px;
+  font-family: var(--font-ui); font-weight: 400; font-size: 0.75rem;
+  vertical-align: middle; margin-inline-start: 8px;
+}
+.doc-header { text-align: center; margin-bottom: 20px; }
+.doc-header .doc-title { font-family: var(--font-holy); font-size: 1.6rem; font-weight: 900; color: var(--gold-bright); }
+.doc-header .doc-sub { color: var(--muted); margin-top: 4px; }
+
+/* ---------- נפטרים ---------- */
+.niftar-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.niftar-row .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.badge {
+  display: inline-block; background: var(--card2); border: 1px solid var(--gold);
+  color: var(--gold-bright); border-radius: 8px; padding: 2px 10px; font-size: 0.85rem;
+}
+.milestones { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; margin-top: 10px; }
+.milestone { background: var(--bg2); border-radius: 10px; padding: 8px 12px; font-size: 0.85rem; }
+.milestone b { display: block; color: var(--gold-bright); }
+
+/* ---------- הילולות ---------- */
+.hilula-date { text-align: center; min-width: 84px; }
+.hilula-date .day { font-family: var(--font-holy); font-size: 1.3rem; font-weight: 900; color: var(--gold-bright); }
+.hilula-row { display: flex; gap: 14px; align-items: flex-start; }
+.today-badge { background: var(--gold); color: #1a1408; border-radius: 8px; padding: 2px 10px; font-weight: 700; font-size: 0.83rem; }
+
+/* ---------- מודאל הגדרות ---------- */
+.modal-back {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.modal { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 22px; width: 100%; max-width: 420px; }
+.modal h2 { font-family: var(--font-holy); color: var(--gold-bright); margin-bottom: 16px; }
+.modal .field { margin-bottom: 12px; }
+
+.disclaimer { color: var(--muted); font-size: 0.78rem; text-align: center; margin-top: 18px; }
+
+/* ---------- הדפסה ---------- */
+@media print {
+  body { background: #fff; color: #000; }
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area {
+    position: absolute; inset: 0; padding: 20px;
+    background: #fff !important; color: #000 !important; border: none !important;
+  }
+  .print-area .sec-title, .print-area .doc-title, .print-area .letter-head { color: #000 !important; border-color: #999 !important; background: #fff !important; }
+  .print-area .doc-sub, .print-area .explain { color: #333 !important; }
+  .print-area .explain { border-color: #999; background: #fff !important; }
+  .tabs, .header { display: none; }
+}
