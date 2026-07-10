@@ -32,7 +32,7 @@ export default function App() {
     <>
       <header className="header">
         <div className="brand">
-          <h1>🕯️ לעילוי</h1>
+          <h1>🕯️ עילוי ונשמה</h1>
           <span className="hdate">{hdateStr}</span>
         </div>
         <button className="icon-btn" onClick={() => setShowSettings(true)}>
