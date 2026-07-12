@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { type Niftar, deathHDate, nextYahrzeit, mourningMilestones } from '../lib/yahrzeit';
+import { type Niftar, deathHDate, nextYahrzeit, nextYahrzeits, mourningMilestones } from '../lib/yahrzeit';
 import type { Settings } from '../lib/store';
 import { HDate } from '@hebcal/core';
+import { HebrewDateInput } from './HebrewDateInput';
+import { googleCalendarUrl, downloadICS } from '../lib/ics';
 
 interface Props {
   settings: Settings;
@@ -76,15 +78,12 @@ export function Niftarim({ settings, niftarim, setNiftarim, onPrepareAzkara }: P
               ))}
             </select>
           </div>
-          <div className="field">
-            <label>תאריך פטירה (לועזי)</label>
-            <input type="date" value={dateISO} onChange={(e) => setDateISO(e.target.value)} />
-          </div>
+          <HebrewDateInput label="תאריך פטירה" valueISO={dateISO} onChange={setDateISO} />
           <div className="field">
             <label>&nbsp;</label>
             <label className="check">
               <input type="checkbox" checked={afterSunset} onChange={(e) => setAfterSunset(e.target.checked)} />
-              הפטירה הייתה אחרי השקיעה
+              הפטירה הייתה אחרי השקיעה (בתאריך לועזי)
             </label>
           </div>
         </div>
@@ -131,6 +130,40 @@ export function Niftarim({ settings, niftarim, setNiftarim, onPrepareAzkara }: P
                 </div>
                 <div className="actions">
                   <button className="btn small" onClick={() => onPrepareAzkara(n.id)}>🕯️ הכן סידור אזכרה</button>
+                  {yz && (
+                    <>
+                      <button
+                        className="btn secondary small"
+                        onClick={() => {
+                          const title = `🕯️ אזכרה: ${n.name} ${n.gender === 'm' ? 'בן' : 'בת'} ${n.parentName}`;
+                          window.open(
+                            googleCalendarUrl({
+                              date: yz.gdate,
+                              title,
+                              description: `יום השנה (${yz.hd.renderGematriya()}) — נוצר באפליקציית עילוי ונשמה`,
+                            }),
+                            '_blank'
+                          );
+                        }}
+                      >
+                        📅 יומן Google
+                      </button>
+                      <button
+                        className="btn secondary small"
+                        onClick={() => {
+                          const title = `🕯️ אזכרה: ${n.name} ${n.gender === 'm' ? 'בן' : 'בת'} ${n.parentName}`;
+                          const events = nextYahrzeits(n, 10).map((y) => ({
+                            date: y.gdate,
+                            title,
+                            description: `יום השנה (${y.hd.renderGematriya()}) — נוצר באפליקציית עילוי ונשמה`,
+                          }));
+                          downloadICS(events, `azkara-${n.name}`);
+                        }}
+                      >
+                        📲 ליומן הטלפון (10 שנים)
+                      </button>
+                    </>
+                  )}
                   <button
                     className="btn danger small"
                     onClick={() => {

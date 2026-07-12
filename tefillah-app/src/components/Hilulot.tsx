@@ -3,6 +3,7 @@ import { HDate } from '@hebcal/core';
 import { HILULOT, type Hilula } from '../data/hilulot';
 import { hilulaGregDate } from '../lib/calendar';
 import { normalizeForSearch } from '../lib/hebrew';
+import { googleCalendarUrl, downloadICS } from '../lib/ics';
 import type { Settings } from '../lib/store';
 
 interface HilulaWithDate extends Omit<Hilula, 'hd'> {
@@ -78,6 +79,39 @@ export function Hilulot({ settings }: { settings: Settings }) {
                 <div style={{ color: 'var(--gold-bright)', fontSize: '0.9rem' }}>{h.title}</div>
                 {h.place && <div className="muted" style={{ marginTop: 2 }}>📍 {h.place}</div>}
                 <div className="muted" style={{ marginTop: 6 }}>{h.about}</div>
+                <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+                  <button
+                    className="btn secondary small"
+                    onClick={() => {
+                      window.open(
+                        googleCalendarUrl({
+                          date: h.gdate,
+                          title: `✡️ הילולת ${h.name}`,
+                          description: `${h.title}${h.place ? ' · ' + h.place : ''} — נוצר באפליקציית עילוי ונשמה`,
+                        }),
+                        '_blank'
+                      );
+                    }}
+                  >
+                    📅 יומן Google
+                  </button>
+                  <button
+                    className="btn secondary small"
+                    onClick={() => {
+                      const today = new HDate(new Date());
+                      const thisYear = hilulaGregDate(h.hm, h.hd, today.getFullYear());
+                      const startYear = new HDate(thisYear).abs() < today.abs() ? today.getFullYear() + 1 : today.getFullYear();
+                      const events = Array.from({ length: 10 }, (_, i) => ({
+                        date: hilulaGregDate(h.hm, h.hd, startYear + i),
+                        title: `✡️ הילולת ${h.name}`,
+                        description: `${h.title}${h.place ? ' · ' + h.place : ''} — נוצר באפליקציית עילוי ונשמה`,
+                      }));
+                      downloadICS(events, `hilula-${h.id}`);
+                    }}
+                  >
+                    📲 ליומן הטלפון (10 שנים)
+                  </button>
+                </div>
               </div>
             </div>
           </div>

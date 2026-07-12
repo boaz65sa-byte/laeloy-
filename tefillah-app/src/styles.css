@@ -207,6 +207,15 @@ body {
 .modal h2 { font-family: var(--font-holy); color: var(--gold-bright); margin-bottom: 16px; }
 .modal .field { margin-bottom: 12px; }
 
+.date-mode { display: inline-flex; gap: 2px; margin-inline-start: 8px; vertical-align: middle; }
+.date-mode button {
+  background: var(--bg2); border: 1px solid var(--border); color: var(--muted);
+  padding: 2px 10px; font-size: 0.78rem; cursor: pointer; font-family: var(--font-ui);
+}
+.date-mode button:first-child { border-radius: 0 8px 8px 0; }
+.date-mode button:last-child { border-radius: 8px 0 0 8px; }
+.date-mode button.active { border-color: var(--gold); color: var(--gold-bright); background: var(--card2); }
+
 .disclaimer { color: var(--muted); font-size: 0.78rem; text-align: center; margin-top: 18px; }
 .brand-line { margin-top: 6px; color: var(--gold); font-size: 0.78rem; letter-spacing: 0.3px; }
 @media print { .print-area .brand-line { color: #555 !important; } }

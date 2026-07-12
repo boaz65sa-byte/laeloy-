@@ -54,6 +54,25 @@ export function nextYahrzeit(n: Niftar, from = new Date()): YahrzeitInfo | null 
   return null;
 }
 
+/** N האזכרות הבאות (ליומן) — החל מהקרובה */
+export function nextYahrzeits(n: Niftar, count: number, from = new Date()): YahrzeitInfo[] {
+  const death = deathHDate(n);
+  const today = new HDate(from);
+  const out: YahrzeitInfo[] = [];
+  for (let hy = today.getFullYear(); out.length < count && hy <= today.getFullYear() + count + 2; hy++) {
+    const yz = yahrzeitInYear(hy, death);
+    if (yz && yz.abs() >= today.abs()) {
+      out.push({
+        hd: yz,
+        gdate: yz.greg(),
+        daysUntil: yz.abs() - today.abs(),
+        yearsSince: hy - death.getFullYear(),
+      });
+    }
+  }
+  return out;
+}
+
 function nextHebrewMonth(m: number, y: number): { m: number; y: number } {
   const order: number[] = HDate.isLeapYear(y)
     ? [months.TISHREI, months.CHESHVAN, months.KISLEV, months.TEVET, months.SHVAT, months.ADAR_I, months.ADAR_II, months.NISAN, months.IYYAR, months.SIVAN, months.TAMUZ, months.AV, months.ELUL]
