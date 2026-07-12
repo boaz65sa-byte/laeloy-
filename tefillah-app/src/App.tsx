@@ -40,7 +40,7 @@ export default function App() {
         </button>
       </header>
 
-      {tab === 'today' && <Dashboard settings={settings} />}
+      {tab === 'today' && <Dashboard settings={settings} niftarim={niftarim} />}
       {tab === 'prayers' && <PrayerBank settings={settings} />}
       {tab === 'azkara' && (
         <Hashkava key={azkaraPrefill ?? 'none'} settings={settings} niftarim={niftarim} prefillId={azkaraPrefill} />

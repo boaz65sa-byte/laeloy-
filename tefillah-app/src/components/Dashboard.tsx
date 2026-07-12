@@ -1,9 +1,37 @@
 import { useMemo } from 'react';
-import { getDayInfo, formatTime, CITIES } from '../lib/calendar';
+import { HDate } from '@hebcal/core';
+import { getDayInfo, formatTime, hilulaGregDate, CITIES } from '../lib/calendar';
+import { HILULOT } from '../data/hilulot';
+import { nextYahrzeit, type Niftar } from '../lib/yahrzeit';
 import type { Settings } from '../lib/store';
 
-export function Dashboard({ settings }: { settings: Settings }) {
+interface Props {
+  settings: Settings;
+  niftarim: Niftar[];
+}
+
+export function Dashboard({ settings, niftarim }: Props) {
   const info = useMemo(() => getDayInfo(new Date(), settings.city), [settings.city]);
+
+  // ההילולה הקרובה ביותר
+  const nextHilula = useMemo(() => {
+    const today = new HDate(new Date());
+    const todayAbs = today.abs();
+    return HILULOT.map((h) => {
+      let hd = new HDate(hilulaGregDate(h.hm, h.hd, today.getFullYear()));
+      if (hd.abs() < todayAbs) hd = new HDate(hilulaGregDate(h.hm, h.hd, today.getFullYear() + 1));
+      return { ...h, hdate: hd, daysUntil: hd.abs() - todayAbs };
+    }).sort((a, b) => a.daysUntil - b.daysUntil)[0];
+  }, []);
+
+  // האזכרה הקרובה ביותר מרשימת יקיריי
+  const nextAzkara = useMemo(() => {
+    const list = niftarim
+      .map((n) => ({ n, yz: nextYahrzeit(n) }))
+      .filter((x) => x.yz !== null)
+      .sort((a, b) => a.yz!.daysUntil - b.yz!.daysUntil);
+    return list[0] ?? null;
+  }, [niftarim]);
 
   const gregStr = new Intl.DateTimeFormat('he-IL', {
     weekday: 'long',
@@ -93,6 +121,39 @@ export function Dashboard({ settings }: { settings: Settings }) {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="say-grid" style={{ marginBottom: 14 }}>
+        {nextHilula && (
+          <div className="card" style={{ marginBottom: 0 }}>
+            <h2>✡️ ההילולה הקרובה</h2>
+            <h3>{nextHilula.name}</h3>
+            <div className="muted">{nextHilula.title}</div>
+            <div style={{ marginTop: 8 }}>
+              <span className="badge">
+                {nextHilula.hdate.renderGematriya()}
+                {' · '}
+                {nextHilula.daysUntil === 0 ? 'היום! 🔥' : nextHilula.daysUntil === 1 ? 'מחר' : `בעוד ${nextHilula.daysUntil} ימים`}
+              </span>
+            </div>
+          </div>
+        )}
+        {nextAzkara && (
+          <div className="card" style={{ marginBottom: 0 }}>
+            <h2>🕯️ אזכרה קרובה</h2>
+            <h3>
+              {nextAzkara.n.name} {nextAzkara.n.gender === 'm' ? 'בן' : 'בת'} {nextAzkara.n.parentName}{' '}
+              {nextAzkara.n.gender === 'm' ? 'ז"ל' : 'ע"ה'}
+            </h3>
+            <div style={{ marginTop: 8 }}>
+              <span className="badge">
+                {nextAzkara.yz!.hd.renderGematriya()}
+                {' · '}
+                {nextAzkara.yz!.daysUntil === 0 ? 'היום' : nextAzkara.yz!.daysUntil === 1 ? 'מחר' : `בעוד ${nextAzkara.yz!.daysUntil} ימים`}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="card">
