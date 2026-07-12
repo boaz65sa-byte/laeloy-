@@ -25,23 +25,38 @@ export interface YahrzeitInfo {
   yearsSince: number;
 }
 
+export type Nusach = 'sefardi' | 'ashkenazi';
+
 /**
  * זהירות: getYahrzeit של hebcal משנה (mutates) את אובייקט התאריך שמועבר אליו
  * כשיש לו שדות yy/mm/dd — לכן מעבירים עותק טרי בכל קריאה.
+ *
+ * מנהגי אדר: נפטר באדר של שנה פשוטה, והאזכרה חלה בשנה מעוברת —
+ * מנהג אשכנז (רמ"א): אדר א' (ברירת המחדל של hebcal);
+ * מנהג ספרדים: אדר ב' — מטופל כאן ידנית.
  */
-function yahrzeitInYear(hyear: number, death: HDate): HDate | undefined {
+function yahrzeitInYear(hyear: number, death: HDate, nusach: Nusach): HDate | undefined {
+  if (hyear <= death.getFullYear()) return undefined;
+  if (
+    nusach === 'sefardi' &&
+    !HDate.isLeapYear(death.getFullYear()) &&
+    death.getMonth() === months.ADAR_I && // "אדר סתם" בשנה פשוטה
+    HDate.isLeapYear(hyear)
+  ) {
+    return new HDate(Math.min(death.getDate(), 29), months.ADAR_II, hyear);
+  }
   const fresh = { yy: death.getFullYear(), mm: death.getMonth(), dd: death.getDate() };
   const raw = HebrewCalendar.getYahrzeit(hyear, fresh as unknown as HDate) as unknown;
   if (!raw) return undefined;
   return raw instanceof HDate ? raw : new HDate(raw as Date);
 }
 
-/** האזכרה הקרובה (כולל היום) — לפי כללי ההלכה של @hebcal (אדר, ל' בחודש חסר) */
-export function nextYahrzeit(n: Niftar, from = new Date()): YahrzeitInfo | null {
+/** האזכרה הקרובה (כולל היום) — לפי כללי ההלכה, עם התאמת אדר לנוסח */
+export function nextYahrzeit(n: Niftar, nusach: Nusach, from = new Date()): YahrzeitInfo | null {
   const death = deathHDate(n);
   const today = new HDate(from);
   for (let hy = today.getFullYear(); hy <= today.getFullYear() + 2; hy++) {
-    const yz = yahrzeitInYear(hy, death);
+    const yz = yahrzeitInYear(hy, death, nusach);
     if (yz && yz.abs() >= today.abs()) {
       return {
         hd: yz,
@@ -55,12 +70,12 @@ export function nextYahrzeit(n: Niftar, from = new Date()): YahrzeitInfo | null 
 }
 
 /** N האזכרות הבאות (ליומן) — החל מהקרובה */
-export function nextYahrzeits(n: Niftar, count: number, from = new Date()): YahrzeitInfo[] {
+export function nextYahrzeits(n: Niftar, nusach: Nusach, count: number, from = new Date()): YahrzeitInfo[] {
   const death = deathHDate(n);
   const today = new HDate(from);
   const out: YahrzeitInfo[] = [];
   for (let hy = today.getFullYear(); out.length < count && hy <= today.getFullYear() + count + 2; hy++) {
-    const yz = yahrzeitInYear(hy, death);
+    const yz = yahrzeitInYear(hy, death, nusach);
     if (yz && yz.abs() >= today.abs()) {
       out.push({
         hd: yz,
@@ -102,9 +117,9 @@ export interface MourningMilestones {
   firstYahrzeit: HDate | null;
 }
 
-export function mourningMilestones(n: Niftar): MourningMilestones {
+export function mourningMilestones(n: Niftar, nusach: Nusach): MourningMilestones {
   const death = deathHDate(n);
-  const yz = yahrzeitInYear(death.getFullYear() + 1, death);
+  const yz = yahrzeitInYear(death.getFullYear() + 1, death, nusach);
   return {
     shivaEnd: new HDate(death.abs() + 6),
     shloshim: new HDate(death.abs() + 29),

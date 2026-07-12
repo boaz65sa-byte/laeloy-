@@ -27,11 +27,11 @@ export function Dashboard({ settings, niftarim }: Props) {
   // האזכרה הקרובה ביותר מרשימת יקיריי
   const nextAzkara = useMemo(() => {
     const list = niftarim
-      .map((n) => ({ n, yz: nextYahrzeit(n) }))
+      .map((n) => ({ n, yz: nextYahrzeit(n, settings.nusach) }))
       .filter((x) => x.yz !== null)
       .sort((a, b) => a.yz!.daysUntil - b.yz!.daysUntil);
     return list[0] ?? null;
-  }, [niftarim]);
+  }, [niftarim, settings.nusach]);
 
   const gregStr = new Intl.DateTimeFormat('he-IL', {
     weekday: 'long',

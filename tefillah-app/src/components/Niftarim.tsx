@@ -49,9 +49,10 @@ export function Niftarim({ settings, niftarim, setNiftarim, onPrepareAzkara }: P
         <h2>➕ הוספת יקיר/ה לרשימת האזכרות</h2>
         {settings.beginner && (
           <div className="explain">
-            💡 מזינים את תאריך הפטירה הלועזי — האפליקציה ממירה לתאריך העברי ומחשבת את האזכרה בכל
-            שנה לפי כללי ההלכה (כולל שנה מעוברת). אם הפטירה הייתה אחרי השקיעה, מסמנים ✓ — כי בלוח
-            העברי היום מתחיל בשקיעה.
+            💡 מזינים את תאריך הפטירה — עברי או לועזי — והאפליקציה מחשבת את האזכרה בכל שנה לפי
+            כללי ההלכה. אם הפטירה הייתה אחרי השקיעה, מסמנים ✓ — כי בלוח העברי היום מתחיל בשקיעה.
+            נפטר באדר של שנה פשוטה? בשנה מעוברת האזכרה תחושב לפי הנוסח שבהגדרות: ספרדי — אדר ב',
+            אשכנזי — אדר א'.
           </div>
         )}
         <div className="form-grid">
@@ -99,11 +100,11 @@ export function Niftarim({ settings, niftarim, setNiftarim, onPrepareAzkara }: P
       )}
 
       {niftarim
-        .map((n) => ({ n, yz: nextYahrzeit(n) }))
+        .map((n) => ({ n, yz: nextYahrzeit(n, settings.nusach) }))
         .sort((a, b) => (a.yz?.daysUntil ?? 9999) - (b.yz?.daysUntil ?? 9999))
         .map(({ n, yz }) => {
           const death = deathHDate(n);
-          const ms = mourningMilestones(n);
+          const ms = mourningMilestones(n, settings.nusach);
           const inKaddishPeriod = today.abs() <= ms.kaddishEnd.abs();
           const gregYz = yz
             ? new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' }).format(yz.gdate)
@@ -152,7 +153,7 @@ export function Niftarim({ settings, niftarim, setNiftarim, onPrepareAzkara }: P
                         className="btn secondary small"
                         onClick={() => {
                           const title = `🕯️ אזכרה: ${n.name} ${n.gender === 'm' ? 'בן' : 'בת'} ${n.parentName}`;
-                          const events = nextYahrzeits(n, 10).map((y) => ({
+                          const events = nextYahrzeits(n, settings.nusach, 10).map((y) => ({
                             date: y.gdate,
                             title,
                             description: `יום השנה (${y.hd.renderGematriya()}) — נוצר באפליקציית עילוי ונשמה`,
