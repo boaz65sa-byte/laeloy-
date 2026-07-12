@@ -60,6 +60,7 @@ export default function App() {
 
       <div className="disclaimer">
         גרסת פיתוח ראשונית · הנוסחים והתאריכים טעונים בדיקה רבנית · אין להסתמך הלכה למעשה ללא אישור רב
+        <div className="brand-line">bs-simple · בועז סעדה — פתרונות יצירתיים</div>
       </div>
 
       <nav className="tabs">

@@ -208,6 +208,8 @@ body {
 .modal .field { margin-bottom: 12px; }
 
 .disclaimer { color: var(--muted); font-size: 0.78rem; text-align: center; margin-top: 18px; }
+.brand-line { margin-top: 6px; color: var(--gold); font-size: 0.78rem; letter-spacing: 0.3px; }
+@media print { .print-area .brand-line { color: #555 !important; } }
 
 /* ---------- הדפסה ---------- */
 @media print {

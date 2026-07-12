@@ -409,6 +409,7 @@ export function Hashkava({ settings, niftarim, prefillId }: Props) {
 
         <div className="disclaimer">
           תהא נשמתו/ה צרורה בצרור החיים · הנוסחים באפליקציה טעונים אישור רב — מומלץ לוודא עם רב הקהילה
+          <div className="brand-line">הופק באפליקציית "עילוי ונשמה" · bs-simple · בועז סעדה — פתרונות יצירתיים</div>
         </div>
       </div>
     </div>

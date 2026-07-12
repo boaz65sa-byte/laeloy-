@@ -2,6 +2,7 @@
   "name": "iluy-veneshama",
   "private": true,
   "version": "0.1.0",
+  "author": "Boaz Saada — bs-simple Creative Solutions",
   "type": "module",
   "scripts": {
     "dev": "vite",
