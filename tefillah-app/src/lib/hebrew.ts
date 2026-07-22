@@ -56,7 +56,50 @@ export function normalizeForSearch(s: string): string {
     .toLowerCase();
 }
 
-/** ציון התאמה פשוט: 3=כותרת, 2=תגית, 1=גוף */
+/** מרחק עריכה (Levenshtein) בין שתי מחרוזות קצרות */
+function editDistance(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+    }
+    prev = cur;
+  }
+  return prev[n];
+}
+
+/** כמה שגיאות כתיב סובלים, לפי אורך המילה המחופשת */
+function toleranceFor(len: number): number {
+  if (len <= 3) return 0;
+  if (len <= 6) return 1;
+  return 2;
+}
+
+/**
+ * בדיקה סלחנית לשגיאות כתיב: מחפשת חלון בגודל דומה לאורך השאילתה
+ * בתוך הטקסט שמרחק העריכה שלו מהשאילתה נמוך מהסף. תומכת גם בשאילתה
+ * רב-מילולית ע"י בדיקת כל מילה בנפרד מול כל מילה בטקסט.
+ */
+export function fuzzyIncludes(text: string, query: string): boolean {
+  if (!query) return false;
+  if (text.includes(query)) return true;
+  const tol = toleranceFor(query.length);
+  if (tol === 0) return false;
+  const words = text.split(' ');
+  for (const w of words) {
+    if (Math.abs(w.length - query.length) > tol) continue;
+    if (editDistance(w, query) <= tol) return true;
+  }
+  return false;
+}
+
+/** ציון התאמה: 3=כותרת, 2=תגית, 1=גוף; התאמה סלחנית לשגיאות כתיב מקבלת ציון נמוך יותר */
 export function searchScore(
   query: string,
   title: string,
@@ -65,9 +108,19 @@ export function searchScore(
 ): number {
   const q = normalizeForSearch(query);
   if (!q) return 0;
+  const nTitle = normalizeForSearch(title);
+  const nTags = tags.map(normalizeForSearch);
+  const nBody = normalizeForSearch(body);
+
   let score = 0;
-  if (normalizeForSearch(title).includes(q)) score += 3;
-  if (tags.some((t) => normalizeForSearch(t).includes(q))) score += 2;
-  if (normalizeForSearch(body).includes(q)) score += 1;
+  if (nTitle.includes(q)) score += 3;
+  else if (fuzzyIncludes(nTitle, q)) score += 1.5;
+
+  if (nTags.some((t) => t.includes(q))) score += 2;
+  else if (nTags.some((t) => fuzzyIncludes(t, q))) score += 1;
+
+  if (nBody.includes(q)) score += 1;
+  else if (fuzzyIncludes(nBody, q)) score += 0.5;
+
   return score;
 }

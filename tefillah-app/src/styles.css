@@ -226,17 +226,34 @@ body {
 .brand-line { margin-top: 6px; color: var(--gold); font-size: 0.78rem; letter-spacing: 0.3px; }
 @media print { .print-area .brand-line { color: #555 !important; } }
 
-/* ---------- הדפסה ---------- */
+/* ---------- הדפסה / ייצוא PDF מעוצב ---------- */
+/* "שמירה כ-PDF" בדפדפן משתמשת בדיוק בכללי ה-print האלה — לכן הפריסה כאן היא בפועל
+   מנוע ה-PDF של הסידור: עמודי A4, מספור עמודים, ומניעת חיתוך אמצע-סעיף. */
+@page {
+  size: A4;
+  margin: 16mm 14mm 18mm;
+  @bottom-center {
+    content: "עילוי ונשמה · עמוד " counter(page) " מתוך " counter(pages);
+    font-size: 8.5pt;
+    color: #666;
+  }
+}
 @media print {
   body { background: #fff; color: #000; }
   body * { visibility: hidden; }
   .print-area, .print-area * { visibility: visible; }
   .print-area {
-    position: absolute; inset: 0; padding: 20px;
+    position: absolute; inset: 0; padding: 0;
     background: #fff !important; color: #000 !important; border: none !important;
   }
   .print-area .sec-title, .print-area .doc-title, .print-area .letter-head { color: #000 !important; border-color: #999 !important; background: #fff !important; }
   .print-area .doc-sub, .print-area .explain { color: #333 !important; }
   .print-area .explain { border-color: #999; background: #fff !important; }
   .tabs, .header { display: none; }
+
+  /* עימוד: לא לחתוך סעיף/פסוק/משנה באמצע בין עמודים */
+  .print-area .doc-header { break-after: avoid; }
+  .print-area .doc-section { break-inside: avoid-page; margin-bottom: 16px; }
+  .print-area .letter-verse, .print-area .who-badge { break-inside: avoid-page; }
+  .print-area .sec-title { break-after: avoid-page; }
 }

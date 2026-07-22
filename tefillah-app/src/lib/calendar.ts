@@ -1,5 +1,7 @@
 // מנוע הלוח העברי — כל "מה אומרים היום" מחושב כאן
 import { HDate, HebrewCalendar, Location, Zmanim, months, flags, Event } from '@hebcal/core';
+import type { Nusach } from './yahrzeit';
+import type { CustomLocation } from './store';
 
 export const CITIES = [
   { id: 'Jerusalem', label: 'ירושלים' },
@@ -73,9 +75,17 @@ export function omerDay(hd: HDate): number | null {
   return diff >= 1 && diff <= 49 ? diff : null;
 }
 
-export function getDayInfo(gdate: Date, cityId: string): DayInfo {
+/** בונה Location מתוך מיקום GPS מדויק — אזור הזמן נלקח מהמכשיר, כי אין ספריית tz-lookup אופליין */
+export function locationFromGPS(loc: CustomLocation): Location {
+  const tzid = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jerusalem';
+  return new Location(loc.lat, loc.lon, true, tzid, loc.label);
+}
+
+export function getDayInfo(gdate: Date, cityId: string, customLocation?: CustomLocation | null): DayInfo {
   const hd = new HDate(gdate);
-  const location = Location.lookup(cityId) ?? Location.lookup('Jerusalem')!;
+  const location = customLocation
+    ? locationFromGPS(customLocation)
+    : (Location.lookup(cityId) ?? Location.lookup('Jerusalem')!);
 
   const events = HebrewCalendar.calendar({ start: gdate, end: gdate, il: IL }) as Event[];
   const mask = events.reduce((acc, ev) => acc | ev.getFlags(), 0);
@@ -169,6 +179,66 @@ export function getDayInfo(gdate: Date, cityId: string): DayInfo {
   };
 }
 
+export interface FastInfo {
+  name: string;
+  hd: HDate;
+  gdate: Date;
+  isMajor: boolean; // צום גדול (25 שעות, מהערב) לעומת צום קטן (מעלות השחר ועד צאת הכוכבים)
+  start: Date;
+  end: Date;
+  daysUntil: number;
+  inProgress: boolean;
+}
+
+/** הצום הקרוב (כולל צום שמתקיים כרגע) — עם זמני כניסה ויציאה מדויקים לפי מיקום */
+export function nextFast(
+  from: Date,
+  cityId: string,
+  customLocation?: CustomLocation | null
+): FastInfo | null {
+  const location = customLocation
+    ? locationFromGPS(customLocation)
+    : (Location.lookup(cityId) ?? Location.lookup('Jerusalem')!);
+
+  const today = new HDate(from);
+  const todayAbs = today.abs();
+  const end = new Date(from.getTime() + 400 * 24 * 60 * 60 * 1000);
+  const events = HebrewCalendar.calendar({ start: from, end, il: IL }) as Event[];
+
+  for (const ev of events) {
+    const m = ev.getFlags();
+    const isFastFlag = !!(m & (flags.MAJOR_FAST | flags.MINOR_FAST));
+    if (!isFastFlag || m & flags.EREV) continue; // מדלגים על "ערב..." — רק יום הצום עצמו
+    const hd = ev.getDate();
+    if (hd.abs() < todayAbs) continue;
+
+    const isMajor = !!(m & flags.MAJOR_FAST);
+    const gdate = hd.greg();
+    let start: Date;
+    let endTime: Date;
+    if (isMajor) {
+      const eve = new Date(gdate.getTime() - 24 * 60 * 60 * 1000);
+      start = new Zmanim(location as never, eve, false).shkiah();
+      endTime = new Zmanim(location as never, gdate, false).tzeit();
+    } else {
+      start = new Zmanim(location as never, gdate, false).alotHaShachar();
+      endTime = new Zmanim(location as never, gdate, false).tzeit();
+    }
+
+    return {
+      name: ev.render('he'),
+      hd,
+      gdate,
+      isMajor,
+      start,
+      end: endTime,
+      daysUntil: hd.abs() - todayAbs,
+      inProgress: from >= start && from < endTime,
+    };
+  }
+  return null;
+}
+
 export function formatTime(d: Date | null, tzid: string): string {
   if (!d) return '—';
   return new Intl.DateTimeFormat('he-IL', {
@@ -178,11 +248,16 @@ export function formatTime(d: Date | null, tzid: string): string {
   }).format(d);
 }
 
-/** תאריך עברי → לועזי בשנה עברית נתונה (להילולות) */
-export function hilulaGregDate(hm: number, hdDay: number, hyear: number): Date {
+/**
+ * תאריך עברי → לועזי בשנה עברית נתונה (להילולות).
+ * הילולות שנקבעו ב"אדר סתם" (hm=ADAR_I) בשנה מעוברת: מנהג ספרדים — אדר ב';
+ * מנהג אשכנז (רמ"א) — אדר א' (ברירת המחדל). אותו כלל כמו ביארצייט, ראו yahrzeit.ts.
+ */
+export function hilulaGregDate(hm: number, hdDay: number, hyear: number, nusach: Nusach = 'ashkenazi'): Date {
   let m = hm;
-  // אדר בשנה מעוברת: הילולות אדר נופלות באדר ב' לפי רוב הפוסקים? המנהג הרווח: אדר א'. נשמור אדר רגיל → בשנה מעוברת אדר ב' עבור הילולות שנקבעו באדר.
-  if (m === months.ADAR_I && !HDate.isLeapYear(hyear)) m = months.ADAR_I; // אדר רגיל
+  if (m === months.ADAR_I && HDate.isLeapYear(hyear) && nusach === 'sefardi') {
+    m = months.ADAR_II;
+  }
   const daysIn = HDate.daysInMonth(m, hyear);
   return new HDate(Math.min(hdDay, daysIn), m, hyear).greg();
 }

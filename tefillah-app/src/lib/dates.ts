@@ -60,3 +60,31 @@ export function hebrewToISO(day: number, month: number, year: number): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${g.getFullYear()}-${pad(g.getMonth() + 1)}-${pad(g.getDate())}`;
 }
+
+export interface HebrewAnniversary {
+  hd: HDate;
+  gdate: Date;
+  daysUntil: number;
+  hebrewYear: number;
+}
+
+/**
+ * המופע הקרוב (כולל היום) של יום/חודש עברי נתון — לחישוב יום הולדת/יארצייט עברי שחוזר כל שנה.
+ * אדר בשנה פשוטה שממופה לשנת יעד מעוברת: נשאר "אדר א'" (ברירת המחדל של HDate, כמנהג אשכנז).
+ */
+export function nextHebrewAnniversary(birthHd: HDate, from = new Date()): HebrewAnniversary {
+  const today = new HDate(from);
+  const todayAbs = today.abs();
+  const month = birthHd.getMonth();
+  const day = birthHd.getDate();
+  for (let hy = today.getFullYear(); hy <= today.getFullYear() + 2; hy++) {
+    const maxDay = HDate.daysInMonth(month, hy);
+    const candidate = new HDate(Math.min(day, maxDay), month, hy);
+    if (candidate.abs() >= todayAbs) {
+      return { hd: candidate, gdate: candidate.greg(), daysUntil: candidate.abs() - todayAbs, hebrewYear: hy };
+    }
+  }
+  // גיבוי תיאורטי בלבד — לא אמור להתרחש בפועל
+  const fallback = new HDate(Math.min(day, HDate.daysInMonth(month, today.getFullYear() + 1)), month, today.getFullYear() + 1);
+  return { hd: fallback, gdate: fallback.greg(), daysUntil: fallback.abs() - todayAbs, hebrewYear: today.getFullYear() + 1 };
+}

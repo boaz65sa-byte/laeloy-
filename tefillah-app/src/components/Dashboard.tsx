@@ -1,28 +1,41 @@
 import { useMemo } from 'react';
 import { HDate } from '@hebcal/core';
-import { getDayInfo, formatTime, hilulaGregDate, CITIES } from '../lib/calendar';
+import { getDayInfo, formatTime, hilulaGregDate, nextFast, CITIES } from '../lib/calendar';
 import { HILULOT } from '../data/hilulot';
 import { nextYahrzeit, type Niftar } from '../lib/yahrzeit';
-import type { Settings } from '../lib/store';
+import { useLocalStorage, type Settings } from '../lib/store';
+import { HebrewBirthday } from './HebrewBirthday';
 
 interface Props {
   settings: Settings;
   niftarim: Niftar[];
+  pid: string;
 }
 
-export function Dashboard({ settings, niftarim }: Props) {
-  const info = useMemo(() => getDayInfo(new Date(), settings.city), [settings.city]);
+export function Dashboard({ settings, niftarim, pid }: Props) {
+  const [followed] = useLocalStorage<string[]>(`tefillah.followedTzadikim.${pid}`, []);
+  const info = useMemo(
+    () => getDayInfo(new Date(), settings.city, settings.customLocation),
+    [settings.city, settings.customLocation]
+  );
 
-  // ההילולה הקרובה ביותר
+  // ההילולה הקרובה ביותר — אם עוקבים אחרי צדיק כלשהו, מציגים את ההילולה הקרובה מבין הצדיקים שעוקבים אחריהם
   const nextHilula = useMemo(() => {
     const today = new HDate(new Date());
     const todayAbs = today.abs();
-    return HILULOT.map((h) => {
-      let hd = new HDate(hilulaGregDate(h.hm, h.hd, today.getFullYear()));
-      if (hd.abs() < todayAbs) hd = new HDate(hilulaGregDate(h.hm, h.hd, today.getFullYear() + 1));
+    const pool = followed.length ? HILULOT.filter((h) => followed.includes(h.id)) : HILULOT;
+    return pool.map((h) => {
+      let hd = new HDate(hilulaGregDate(h.hm, h.hd, today.getFullYear(), settings.nusach));
+      if (hd.abs() < todayAbs) hd = new HDate(hilulaGregDate(h.hm, h.hd, today.getFullYear() + 1, settings.nusach));
       return { ...h, hdate: hd, daysUntil: hd.abs() - todayAbs };
     }).sort((a, b) => a.daysUntil - b.daysUntil)[0];
-  }, []);
+  }, [settings.nusach, followed]);
+
+  // הצום הקרוב (כולל צום שמתקיים כרגע) — עם זמני כניסה ויציאה
+  const fast = useMemo(
+    () => nextFast(new Date(), settings.city, settings.customLocation),
+    [settings.city, settings.customLocation]
+  );
 
   // האזכרה הקרובה ביותר מרשימת יקיריי
   const nextAzkara = useMemo(() => {
@@ -40,7 +53,9 @@ export function Dashboard({ settings, niftarim }: Props) {
     year: 'numeric',
   }).format(info.gdate);
 
-  const cityLabel = CITIES.find((c) => c.id === settings.city)?.label ?? settings.city;
+  const cityLabel = settings.customLocation
+    ? `📍 ${settings.customLocation.label}`
+    : (CITIES.find((c) => c.id === settings.city)?.label ?? settings.city);
 
   return (
     <div>
@@ -126,7 +141,7 @@ export function Dashboard({ settings, niftarim }: Props) {
       <div className="say-grid" style={{ marginBottom: 14 }}>
         {nextHilula && (
           <div className="card" style={{ marginBottom: 0 }}>
-            <h2>✡️ ההילולה הקרובה</h2>
+            <h2>✡️ {followed.length ? 'ההילולה הקרובה שאני עוקב/ת אחריה' : 'ההילולה הקרובה'}</h2>
             <h3>{nextHilula.name}</h3>
             <div className="muted">{nextHilula.title}</div>
             <div style={{ marginTop: 8 }}>
@@ -156,6 +171,30 @@ export function Dashboard({ settings, niftarim }: Props) {
         )}
       </div>
 
+      {fast && (
+        <div className="card">
+          <h2>
+            {fast.isMajor ? '🕯️' : '🥀'} {fast.inProgress ? `הצום מתקיים כרגע — ${fast.name}` : `הצום הקרוב — ${fast.name}`}
+          </h2>
+          <div className="muted" style={{ marginBottom: 8 }}>
+            {fast.hd.renderGematriya()}
+            {' · '}
+            {fast.daysUntil === 0 ? 'היום' : fast.daysUntil === 1 ? 'מחר' : `בעוד ${fast.daysUntil} ימים`}
+            {fast.isMajor && <span> · צום גדול (25 שעות, מהערב)</span>}
+          </div>
+          <div className="zmanim-grid">
+            <div className="zman">
+              <span>🌙 כניסת הצום</span>
+              <b>{formatTime(fast.start, info.tzid)}</b>
+            </div>
+            <div className="zman">
+              <span>✨ יציאת הצום</span>
+              <b>{formatTime(fast.end, info.tzid)}</b>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="card">
         <h2>זמני שבת — {cityLabel}</h2>
         <div className="zmanim-grid">
@@ -181,6 +220,8 @@ export function Dashboard({ settings, niftarim }: Props) {
           ))}
         </div>
       </div>
+
+      <HebrewBirthday />
     </div>
   );
 }

@@ -45,7 +45,7 @@ export default function App() {
     { id: 'default', name: 'ראשי' },
   ]);
   const [activePid, setActivePid] = useLocalStorage<string>('iluy.activeProfile', 'default');
-  const active = profiles.find((p) => p.id === activePid) ?? profiles[0];
+  const active = profiles.find((p) => p.id === activePid) ?? profiles[0] ?? { id: 'default', name: 'ראשי' };
 
   return (
     <MainApp
@@ -116,8 +116,8 @@ function MainApp({ pid, profiles, setProfiles, activeProfile, setActivePid }: Ma
         </div>
       </header>
 
-      {tab === 'today' && <Dashboard settings={settings} niftarim={niftarim} />}
-      {tab === 'prayers' && <PrayerBank settings={settings} />}
+      {tab === 'today' && <Dashboard settings={settings} niftarim={niftarim} pid={pid} />}
+      {tab === 'prayers' && <PrayerBank settings={settings} pid={pid} />}
       {tab === 'azkara' && (
         <Hashkava key={azkaraPrefill ?? 'none'} settings={settings} niftarim={niftarim} prefillId={azkaraPrefill} />
       )}
@@ -132,10 +132,16 @@ function MainApp({ pid, profiles, setProfiles, activeProfile, setActivePid }: Ma
           }}
         />
       )}
-      {tab === 'hilulot' && <Hilulot settings={settings} />}
+      {tab === 'hilulot' && <Hilulot settings={settings} pid={pid} />}
 
       <div className="disclaimer">
         גרסת פיתוח ראשונית · הנוסחים והתאריכים טעונים בדיקה רבנית · אין להסתמך הלכה למעשה ללא אישור רב
+        {' · '}
+        <a
+          href={`mailto:${DONATION.contactEmail}?subject=${encodeURIComponent('דיווח על טעות בנוסח — עילוי ונשמה')}`}
+        >
+          דיווח על טעות
+        </a>
         <div className="brand-line">bs-simple · בועז סעדה — פתרונות יצירתיים</div>
       </div>
 
@@ -164,11 +170,50 @@ function MainApp({ pid, profiles, setProfiles, activeProfile, setActivePid }: Ma
             </div>
             <div className="field">
               <label>עיר (לזמני היום והשבת)</label>
-              <select value={settings.city} onChange={(e) => setSettings({ ...settings, city: e.target.value })}>
+              <select
+                value={settings.city}
+                disabled={!!settings.customLocation}
+                onChange={(e) => setSettings({ ...settings, city: e.target.value })}
+              >
                 {CITIES.map((c) => (
                   <option key={c.id} value={c.id}>{c.label}</option>
                 ))}
               </select>
+              {settings.customLocation ? (
+                <div className="muted" style={{ marginTop: 6, fontSize: '0.85rem' }}>
+                  📍 משתמש במיקום GPS מדויק במקום רשימת הערים.{' '}
+                  <button className="btn secondary small" onClick={() => setSettings({ ...settings, customLocation: null })}>
+                    בטל וחזור לרשימת ערים
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="btn secondary small"
+                  style={{ marginTop: 6 }}
+                  onClick={() => {
+                    if (!navigator.geolocation) {
+                      alert('הדפדפן הזה לא תומך באיתור מיקום.');
+                      return;
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                      (pos) => {
+                        setSettings({
+                          ...settings,
+                          customLocation: {
+                            lat: pos.coords.latitude,
+                            lon: pos.coords.longitude,
+                            label: 'המיקום שלי',
+                          },
+                        });
+                      },
+                      () => alert('לא הצלחנו לקבל הרשאה למיקום. אפשר להמשיך עם רשימת הערים.'),
+                      { timeout: 10000 }
+                    );
+                  }}
+                >
+                  📍 השתמש במיקום המדויק שלי (GPS)
+                </button>
+              )}
             </div>
             <div className="field">
               <label className="check">
@@ -217,6 +262,9 @@ function MainApp({ pid, profiles, setProfiles, activeProfile, setActivePid }: Ma
             </div>
 
             <button className="btn" onClick={() => setShowSettings(false)}>שמור וסגור</button>
+            <div className="muted" style={{ textAlign: 'center', marginTop: 12, fontSize: '0.8rem' }}>
+              <a href="/privacy.html" target="_blank" rel="noreferrer">מדיניות פרטיות</a>
+            </div>
           </div>
         </div>
       )}

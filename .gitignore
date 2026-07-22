@@ -4,3 +4,23 @@ dist/
 .DS_Store
 *.tsbuildinfo
 .vercel/
+
+# TWA (Android) — mobile/android/twa-manifest.json כן נשמר (קונפיג-מקור), אבל לא שום דבר
+# שנוצר ע"י בילד או מכיל את מפתח החתימה (אסור להעלות ל-git!)
+mobile/android/*.keystore
+mobile/android/*password*
+mobile/android/*.aab
+mobile/android/*.apk
+mobile/android/*.apk.idsig
+mobile/android/app/
+mobile/android/build/
+mobile/android/gradle/
+mobile/android/.gradle/
+mobile/android/gradlew
+mobile/android/gradlew.bat
+mobile/android/build.gradle
+mobile/android/settings.gradle
+mobile/android/gradle.properties
+mobile/android/local.properties
+mobile/android/manifest-checksum.txt
+mobile/android/store_icon.png
