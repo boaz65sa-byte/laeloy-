@@ -9,6 +9,7 @@ dist/
 # שנוצר ע"י בילד או מכיל את מפתח החתימה (אסור להעלות ל-git!)
 mobile/android/*.keystore
 mobile/android/*password*
+mobile/android/keystore.properties
 mobile/android/*.aab
 mobile/android/*.apk
 mobile/android/*.apk.idsig

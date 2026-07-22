@@ -11,7 +11,7 @@
 | `tefillah-app/public/pwa-512.png` | אייקון "any" (512×512) | ✅ מוכן |
 | `tefillah-app/public/pwa-512-maskable.png` | אייקון maskable — תוכן מרוכז ב-65% עם שוליים בטוחים | ✅ מוכן (נוצר מחדש עם ריפוד תקין) |
 | Feature Graphic (1024×500) | חובה ל-Play Console | ✅ מוכן — `store-assets/feature-graphic.png` (נר על רקע גרדיאנט, תואם לאייקונים) |
-| Screenshots (מינימום 2, מומלץ 4-8) | חובה ל-Play Console | ❌ לא צולמו עדיין — לא ניתן היה לצלם אוטומטית בסביבת העבודה הנוכחית (אין תצוגת דפדפן חיה זמינה); יש לצלם ידנית לפי ההנחיה למטה |
+| Screenshots (מינימום 2, מומלץ 4-8) | חובה ל-Play Console | ✅ 5 צילומים אמיתיים ב-`store-assets/screenshots/` (היום, אזכרה, יקיריי, תפילות + בונוס מסך קריאה). חסר עדיין צילום "הילולות" נקי — ראו הרשימה למטה |
 
 **מסכים מומלצים לצילום** (פתחו את `laeloy.vercel.app` בכרום על הטלפון, או ב-DevTools במצב מובייל — Ctrl+Shift+M):
 1. "היום" — הדשבורד (מה אומרים היום, זמני היום, ההילולה הקרובה)
@@ -44,27 +44,35 @@
 
 ---
 
-## מוכנות ל-TWA (עטיפת Android)
+## מוכנות ל-TWA (עטיפת Android) — ✅ ה-AAB החתום מוכן
 
 נוצר `mobile/android/twa-manifest.json` (קונפיג-מקור, נשמר בגיט) עם:
 - `packageId: app.vercel.laeloy.twa`
 - `host: laeloy.vercel.app`
 - אייקונים: `pwa-512.png` / `pwa-512-maskable.png`
 
-**עדיין חסר להשלמת הבנייה בפועל** (דורש הרצת `bubblewrap build`, שיוצר קובץ keystore לחתימה):
-1. הרצת `npx @bubblewrap/cli build` מתוך `mobile/android/` — זה ייצור keystore חדש (מפתח חתימה) ואת פרויקט האנדרואיד (Gradle) עצמו.
-2. **חשוב מאוד**: קובץ ה-keystore שייווצר הוא **בלתי-הפיך** — אם הוא יאבד, לא ניתן יהיה לפרסם עדכון לאפליקציה תחת אותו רישום ב-Play לעולם. יש לגבות אותו (+ הסיסמה) במקום בטוח מיד לאחר היצירה, מחוץ למחשב הזה.
-3. לאחר היצירה: `keytool -list -v -keystore mobile/android/android.keystore` → להוציא את ה-SHA256 fingerprint ולעדכן את `tefillah-app/public/.well-known/assetlinks.json` (יש שם כרגע placeholder).
-4. פריסה מחדש ל-Vercel כדי שה-assetlinks.json המעודכן יהיה חי, ואז בניית ה-APK/AAB הסופי לחתימה.
+**בוצע (2026-07-22)**:
+1. נוצר `mobile/android/android.keystore` (RSA 2048, תוקף 10,000 יום) — **קובץ בלתי-הפיך, חובה עליך לגבות אותו + הסיסמה מיד** (הועברה בצ'אט בנפרד, לא נשמרת כאן בקובץ). אם הוא יאבד, לא ניתן יהיה לפרסם עדכון לאפליקציה תחת אותו רישום ב-Play לעולם.
+2. חולץ ה-SHA256 fingerprint ועודכן ב-`tefillah-app/public/.well-known/assetlinks.json` (כבר לא placeholder).
+3. נוצר `mobile/android/keystore.properties` (מקומי, ב-gitignore — לא מועלה לגיט) + חוברה תצורת חתימה ב-`app/build.gradle`.
+4. נוספו קבצי `ic_maskable.png` בכל צפיפות מסך (חסרו בסקאפולד המקורי של Bubblewrap).
+5. `./gradlew bundleRelease` הצליח — הקובץ החתום נמצא ב־`mobile/android/app/build/outputs/bundle/release/app-release.aab` (לא מועלה לגיט, נשאר מקומי).
 
-זו בדיוק אותה שיטת עבודה שכבר בוצעה בפרויקט בוזוקי אקדמי (`mobile/android/twa-manifest.json` שם).
+**נותר לך בלבד (דורש חשבון Google Play Console שלך — אין לי גישה אליו)**:
+1. להעלות את `app-release.aab` ל-Play Console (Production/Testing track).
+2. למלא Content Rating ו-Data Safety (ראו סעיפים למעלה).
+3. לוודא ש-`https://laeloy.vercel.app/.well-known/assetlinks.json` פרוס (ה-deploy האחרון כלל את זה).
+4. Submit for review.
+
+זו בדיוק אותה שיטת עבודה שכבר בוצעה בפרויקט בוזוקי אקדמי.
 
 ---
 
 ## שדות חסירים שצריך למלא בעצמך
 
-- [ ] **צילומי מסך אמיתיים** — לפי הרשימה למעלה.
-- [ ] **Feature Graphic** (1024×500) — לא נוצר.
-- [ ] **הרצת Bubblewrap בפועל + גיבוי הקיסטור** — פעולה בלתי הפיכה, ראו סעיף למעלה. מומלץ לאשר במפורש לפני ההרצה.
+- [ ] **גיבוי מיידי של android.keystore + הסיסמה** — הכי דחוף מכל השאר.
+- [ ] **צילום "הילולות" נקי** — 5 מתוך 6 נשמרו, זה היחיד שחסר.
 - [ ] **דירוג תוכן (Content Rating)** — שאלון בפועל בתוך Play Console.
 - [ ] **החלטה על קטגוריה** — Lifestyle מול Books & Reference.
+- [ ] **העלאה בפועל ל-Play Console** — דורש את חשבון ה-Google Play שלך.
+- [ ] **בדיקה רבנית** של הנוסחים — עדיין לא בוצעה, ראוי לפני פרסום ציבורי.
