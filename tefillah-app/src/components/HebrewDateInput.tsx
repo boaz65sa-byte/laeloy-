@@ -42,7 +42,7 @@ export function HebrewDateInput({ valueISO, onChange, label }: Props) {
   };
 
   return (
-    <div className="field" style={{ gridColumn: 'span 2' }}>
+    <div className="field field-wide">
       <label>
         {label}{' '}
         <span className="date-mode">
