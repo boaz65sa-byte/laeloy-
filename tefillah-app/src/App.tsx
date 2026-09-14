@@ -8,7 +8,7 @@ import { Hilulot } from './components/Hilulot';
 import { useLocalStorage, useLocalList, DEFAULT_SETTINGS, type Settings } from './lib/store';
 import type { Niftar } from './lib/yahrzeit';
 import { CITIES } from './lib/calendar';
-import { DONATION, donationHasPaymentDetails } from './data/donation';
+import { DONATION, donationSmsHref } from './data/donation';
 
 type Tab = 'today' | 'prayers' | 'azkara' | 'niftarim' | 'hilulot';
 
@@ -276,36 +276,23 @@ function MainApp({ pid, profiles, setProfiles, activeProfile, setActivePid }: Ma
             <p style={{ marginBottom: 12, lineHeight: 1.7 }}>{DONATION.dedication}</p>
             <p className="muted" style={{ marginBottom: 14, lineHeight: 1.7 }}>{DONATION.memorial}</p>
 
-            {DONATION.bitPhone && (
-              <div className="donate-row">📱 ביט: <b>{DONATION.bitPhone}</b></div>
-            )}
-            {DONATION.payboxUrl && (
-              <a className="btn secondary small donate-btn" href={DONATION.payboxUrl} target="_blank" rel="noreferrer">
-                💳 תרומה ב-PayBox
-              </a>
-            )}
-            {DONATION.paypalUrl && (
-              <a className="btn secondary small donate-btn" href={DONATION.paypalUrl} target="_blank" rel="noreferrer">
-                🌐 תרומה ב-PayPal
-              </a>
-            )}
-            {DONATION.bankDetails && (
-              <div className="donate-row">🏦 העברה בנקאית: {DONATION.bankDetails}</div>
-            )}
-            {!donationHasPaymentDetails() && (
-              <div className="explain">אמצעי התרומה יפורסמו בקרוב, בעזרת ה'.</div>
-            )}
+            <a className="btn donate-btn" href={donationSmsHref()}>
+              💬 לתרומה במסרון
+            </a>
+            <p className="muted" style={{ marginBottom: 12, fontSize: '0.85rem', lineHeight: 1.6 }}>
+              ייפתח מסרון אל {DONATION.smsPhone} עם הנוסח «{DONATION.smsBody}». אין גבייה באפליקציה.
+            </p>
             {DONATION.contactEmail && (
               <a
                 className="btn secondary small donate-btn"
-                href={`mailto:${DONATION.contactEmail}?subject=${encodeURIComponent('תרומה / הנצחה — עילוי ונשמה')}`}
+                href={`mailto:${DONATION.contactEmail}?subject=${encodeURIComponent('הנצחה ויצירת קשר — עילוי ונשמה')}`}
               >
-                ✉️ לתרומות והנצחות: {DONATION.contactEmail}
+                ✉️ הנצחה ויצירת קשר: {DONATION.contactEmail}
               </a>
             )}
 
             <div style={{ marginTop: 14 }}>
-              <button className="btn" onClick={() => setShowDonation(false)}>סגור</button>
+              <button className="btn secondary" onClick={() => setShowDonation(false)}>סגור</button>
             </div>
           </div>
         </div>
