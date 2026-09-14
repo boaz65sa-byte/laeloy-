@@ -276,7 +276,15 @@ function MainApp({ pid, profiles, setProfiles, activeProfile, setActivePid }: Ma
             <p style={{ marginBottom: 12, lineHeight: 1.7 }}>{DONATION.dedication}</p>
             <p className="muted" style={{ marginBottom: 14, lineHeight: 1.7 }}>{DONATION.memorial}</p>
 
-            <a className="btn donate-btn" href={donationSmsHref()}>
+            <a
+              className="btn donate-btn"
+              href={donationSmsHref()}
+              onClick={(event) => {
+                // iOS/Android: hand off to Messages. Avoid in-app / SW navigation.
+                event.preventDefault();
+                window.location.assign(donationSmsHref());
+              }}
+            >
               💬 לתרומה במסרון
             </a>
             <p className="muted" style={{ marginBottom: 12, fontSize: '0.85rem', lineHeight: 1.6 }}>
@@ -292,7 +300,7 @@ function MainApp({ pid, profiles, setProfiles, activeProfile, setActivePid }: Ma
             )}
 
             <div style={{ marginTop: 14 }}>
-              <button className="btn secondary" onClick={() => setShowDonation(false)}>סגור</button>
+              <button className="btn secondary donate-btn" onClick={() => setShowDonation(false)}>סגור</button>
             </div>
           </div>
         </div>

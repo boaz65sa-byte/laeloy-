@@ -223,7 +223,7 @@ body {
 .date-mode button:last-child { border-radius: 8px 0 0 8px; }
 .date-mode button.active { border-color: var(--gold); color: var(--gold-bright); background: var(--card2); }
 
-.donate-btn { display: block; text-align: center; text-decoration: none; margin-bottom: 8px; }
+.donate-btn { display: block; width: 100%; text-align: center; text-decoration: none; margin-bottom: 8px; }
 
 .disclaimer { color: var(--muted); font-size: 0.78rem; text-align: center; margin-top: 18px; }
 .brand-line { margin-top: 6px; color: var(--gold); font-size: 0.78rem; letter-spacing: 0.3px; }
