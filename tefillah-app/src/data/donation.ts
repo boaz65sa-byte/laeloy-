@@ -1,16 +1,13 @@
-// פרטי תרומות והנצחה — ממלאים כאן את הפרטים והם מופיעים אוטומטית במסך התרומות.
-// שדה ריק ('') לא יוצג בכלל.
+// פרטי תרומה והנצחה.
+// האפליקציה חינמית ואינה גובה תשלום בתוכה (App Store Guideline 3.2.2(iv)):
+// כפתור התרומה פותח מסרון בלבד — בלי Bit / PayBox / PayPal / העברה בנקאית / SDK תשלום.
 
 export const DONATION = {
-  /** טלפון לתרומה בביט */
-  bitPhone: '',
-  /** קישור PayBox */
-  payboxUrl: '',
-  /** קישור PayPal */
-  paypalUrl: '',
-  /** פרטי העברה בנקאית (בנק, סניף, חשבון, שם המוטב) */
-  bankDetails: '',
-  /** אימייל ליצירת קשר, תרומות והנצחות */
+  /** מספר הטלפון למסרון תרומה */
+  smsPhone: '0547606629',
+  /** גוף המסרון שיוזן מראש */
+  smsBody: 'לתרומה',
+  /** אימייל ליצירת קשר ולהנצחה (לא אמצעי תשלום) */
   contactEmail: 'boaz65sa@gmail.com',
   /** טקסט ההקדשה במסך התרומות */
   dedication:
@@ -20,5 +17,6 @@ export const DONATION = {
     'ניתן להקדיש יום באפליקציה לעילוי נשמת יקיריכם — "היום מוקדש לעילוי נשמת..." — לרפואה שלמה או להצלחה. לפרטים כתבו לנו.',
 };
 
-export const donationHasPaymentDetails = () =>
-  !!(DONATION.bitPhone || DONATION.payboxUrl || DONATION.paypalUrl || DONATION.bankDetails);
+/** קישור sms: שפותח את אפליקציית ההודעות עם מספר וגוף מוכנים. `?&body=` עובד ב-iOS וב-Android. */
+export const donationSmsHref = () =>
+  `sms:${DONATION.smsPhone}?&body=${encodeURIComponent(DONATION.smsBody)}`;
